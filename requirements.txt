@@ -1,0 +1,5 @@
+Flask
+redis
+azure-cosmos
+numpy
+scikit-learn

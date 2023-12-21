@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dunwei Du 76004 & Qingwei Zeng 76028</title>
+    <style>
+        /* Basic styling - you can expand upon this */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        #results {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dunwei Du 76004 & Qingwei Zeng 76028</h1>
+
+    <!-- Closest Cities Form -->
+    <section>
+        <h2>Closest Cities Query</h2>
+        <form id="closest-cities-form">
+            City Name: <input type="text" id="city-name" required><br>
+            Page Size: <input type="number" id="page-size" required><br>
+            Page Number: <input type="number" id="page-number" required><br>
+            <button type="submit">Submit</button>
+        </form>
+    </section>
+
+    <!-- KNN Reviews Form -->
+    <section>
+        <h2>KNN Reviews Query</h2>
+        <form id="knn-reviews-form">
+            Number of Classes: <input type="number" id="num-classes" required><br>
+            K Value: <input type="number" id="k-value" required><br>
+            Number of Words: <input type="number" id="num-words" required><br>
+            <button type="submit">Submit</button>
+        </form>
+    </section>
+
+    <!-- Results Display Area -->
+    <section>
+        <h2>Results</h2>
+        <div id="results"></div>
+    </section>
+
+    <!-- Flush Cache Button -->
+    <button id="flush-cache">Flush Cache</button>
+
+    <script>
+        document.getElementById('closest-cities-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const cityName = document.getElementById('city-name').value;
+            const pageSize = document.getElementById('page-size').value;
+            const pageNumber = document.getElementById('page-number').value;
+            fetch(`/stat/closest_cities?city=${cityName}&page_size=${pageSize}&page=${pageNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('results').innerText = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        document.getElementById('knn-reviews-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const numClasses = document.getElementById('num-classes').value;
+            const kValue = document.getElementById('k-value').value;
+            const numWords = document.getElementById('num-words').value;
+            fetch(`/stat/knn_reviews?classes=${numClasses}&k=${kValue}&words=${numWords}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('results').innerText = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        document.getElementById('flush-cache').addEventListener('click', function() {
+            fetch('/purge_cache', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>
