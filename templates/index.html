@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clustering Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Clustering Analysis</h1>
+
+    <label for="classes">Classes:</label>
+    <input type="number" id="classes" name="classes" value="6">
+    <label for="k">K:</label>
+    <input type="number" id="k" name="k" value="3">
+    <button onclick="generatePieChart()">Generate Pie Chart</button>
+
+    <canvas id="pieChart"></canvas>
+
+    <script>
+    function generatePieChart() {
+        var classes = document.getElementById('classes').value;
+        var k = document.getElementById('k').value;
+
+        fetch(`/stat/clustering_pie_chart?classes=${classes}&k=${k}`)
+            .then(response => response.json())
+            .then(data => {
+                var ctx = document.getElementById('pieChart').getContext('2d');
+                var pieChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: Array.from({length: data.classes}, (_, i) => `Class ${i + 1}`),
+                        datasets: [{
+                            data: data.class_counts,
+                            backgroundColor: ['red', 'blue', 'green', 'yellow', 'purple', 'orange'],
+                            borderWidth: 1
+                        }]
+                    }
+                });
+            });
+    }
+    </script>
+</body>
+</html>
