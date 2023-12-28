@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>City Review Scores</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>City Review Scores</h1>
+    <form id="reviewForm">
+        City Name: <input type="text" id="cityName" required>
+        State Name: <input type="text" id="stateName" required>
+        <button type="button" onclick="submitReviewQuery()">Submit</button>
+    </form>
+    <div>
+        <canvas id="reviewChart"></canvas>
+    </div>
+    <button id="prevReviewPage" onclick="changeReviewPage(-1)">Previous Page</button>
+    <button id="nextReviewPage" onclick="changeReviewPage(1)">Next Page</button>
+    <div id="reviewResponseTime"></div>
+
+    <script>
+    // JavaScript 代码来处理查询和更新图表
+    // 定义全局变量
+    let currentPage = 1;
+    const pageSize = 10;
+
+    function submitReviewQuery() {
+        const cityName = document.getElementById('cityName').value.trim();
+        const stateName = document.getElementById('stateName').value.trim();
+        if (!cityName || !stateName) {
+            alert('Please enter both city name and state name.');
+            return;
+        }
+        currentPage = 1;
+        fetchCityReviews(cityName, stateName, currentPage);
+    }
+
+    function changeReviewPage(change) {
+        const cityName = document.getElementById('cityName').value.trim();
+        const stateName = document.getElementById('stateName').value.trim();
+        if (!cityName || !stateName) {
+            alert('Please enter both city name and state name.');
+            return;
+        }
+        currentPage += change;
+        fetchCityReviews(cityName, stateName, currentPage);
+    }
+
+    function fetchCityReviews(city, state, page) {
+        fetch(`/stat/city_reviews?city=${city}&state=${state}&page=${page}&page_size=${pageSize}`)
+            .then(response => response.json())
+            .then(data => {
+                updateLineChart(data.result);
+                document.getElementById('reviewResponseTime').innerText = `Response Time: ${data.compute_time} ms`;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function updateLineChart(cityReviews) {
+        const ctx = document.getElementById('reviewChart').getContext('2d');
+        if (window.lineChart) {
+            window.lineChart.destroy();
+        }
+        window.lineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: cityReviews.map(city => `${city.city}, ${city.state}`),
+                datasets: [{
+                    label: 'Average Review Score',
+                    data: cityReviews.map(city => city.average_score),
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    </script>
+</body>
+</html>

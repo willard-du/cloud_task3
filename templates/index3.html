@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>City Distance Query</title>
+    <!-- 引入 Chart.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>City Distance Query</h1>
+    <form id="queryForm">
+        City Name: <input type="text" id="cityName" required>
+        State Name: <input type="text" id="stateName" required>
+        <button type="button" onclick="submitQuery()">Submit</button>
+    </form>
+    <div>
+        <canvas id="distanceChart"></canvas>
+    </div>
+    <button id="prevPage" onclick="changePage(-1)">Previous Page</button>
+    <button id="nextPage" onclick="changePage(1)">Next Page</button>
+    <div id="responseTime"></div>
+    <script>let currentPage = 1;
+const pageSize = 50; // 每页显示的城市数量
+
+function submitQuery() {
+    const cityName = document.getElementById('cityName').value.trim();
+    const stateName = document.getElementById('stateName').value.trim();
+    if (!cityName || !stateName) {
+        alert('Please enter both city name and state name.');
+        return;
+    }
+    currentPage = 1; // 重置为第一页
+    fetchCities(cityName, stateName, currentPage);
+}
+
+function changePage(change) {
+    const cityName = document.getElementById('cityName').value.trim();
+    const stateName = document.getElementById('stateName').value.trim();
+    if (!cityName || !stateName) {
+        alert('Please enter both city name and state name.');
+        return;
+    }
+    currentPage += change;
+    fetchCities(cityName, stateName, currentPage);
+}
+
+function fetchCities(city, state, page) {
+    fetch(`/stat/closest_cities?city=${city}&state=${state}&page=${page}&page_size=${pageSize}`)
+        .then(response => response.json())
+        .then(data => {
+            updateChart(data.result);
+            document.getElementById('responseTime').innerText = `Response Time: ${data.compute_time} ms`;
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function updateChart(cities) {
+    const ctx = document.getElementById('distanceChart').getContext('2d');
+    if (window.barChart) {
+        window.barChart.destroy();
+    }
+    window.barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: cities.map(city => `${city.city}, ${city.state}`),
+            datasets: [{
+                label: 'Distance',
+                data: cities.map(city => city.distance),
+                backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                borderColor: 'rgba(0, 123, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}</script>
+
+
+</body>
+</html>
